@@ -1,3 +1,4 @@
+  require('dotenv').config();
 // =================================================================
 // get the packages we need ========================================
 // =================================================================
@@ -7,6 +8,9 @@ var bodyParser  = require('body-parser');
 var morgan      = require('morgan');
 var mongoose    = require('mongoose');
 
+const uriUtil   = require('mongodb-uri');
+const cors      = require('cors');
+
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var config = require('./config'); // get our config file
 var User   = require('./app/models/user'); // get our mongoose model
@@ -14,13 +18,21 @@ var User   = require('./app/models/user'); // get our mongoose model
 // =================================================================
 // configuration ===================================================
 // =================================================================
-var port = process.env.PORT || 8080; // used to create, sign, and verify tokens
-mongoose.connect(config.database); // connect to database
-app.set('superSecret', config.secret); // secret variable
+const mongooseUri = uriUtil.formatMongoose(process.env.DB_URI);
+
+//db options 
+const dbOptions = {};
+
+//setup app
+var port = process.env.PORT || 3000; // used to create, sign, and verify tokens
+//connect to mLab 
+mongoose.connect(mongooseUri,dbOptions, ()=>{console.log(`connected to mLab database !${process.env.DB_URI}`)});
+app.set('superSecret', process.env.SECRET); // secret variable
 
 // use body parser so we can get info from POST and/or URL parameters
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors());
 
 // use morgan to log requests to the console
 app.use(morgan('dev'));
@@ -32,7 +44,7 @@ app.get('/setup', function(req, res) {
 
 	// create a sample user
 	var nick = new User({ 
-		name: 'Nick Cerminara', 
+		name: 'havino', 
 		password: 'password',
 		admin: true 
 	});
